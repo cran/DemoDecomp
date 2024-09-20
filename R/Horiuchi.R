@@ -17,7 +17,7 @@
 #' @param N The number of intervals to integrate over. 
 #' @param \dots optional parameters to pass on to \code{func()}. These are not decomposed.
 #' 
-#' @details The decomposition works by assuming a linear change in all covariates between time 1 and time 2 (or population 1 and population 2). At each small time step approaching time 2 (the size of which is the inverse of \code{N}) each covariate is moved forward along its linear trajectory. One at a time, each covariate (of which there are ages*variables of) is switched out twice, once for its value at 1/(2N) forward and once for its value at 1/(2N) backward in time. The difference between \code{func()} evaluated with these two rate matrices is the change in \code{y}attributable to that particular covariate and that particular time step. Summing over all N time steps, we get the contribution to the difference of each covariate, \code{effectmat}. The sum of \code{effectmat} should come very close to \code{func(rates2)-func(rates1)}. The error decreases with larger \code{N}, but there is not much point in having an \code{N} higher than 100, and 20 is usually sufficient. This ought to be able to handle a very wide variety of functions. 
+#' @details The decomposition works by assuming a linear change in all parameters between \code{pars1} and \code{pars2}. At each small step approaching time 2 (the size of which is \code{1/N}) each parameter is moved forward along its linear trajectory. One at a time, each covariate (of which there are ages*variables of) is switched out twice, once for its value at 1/(2N) forward and once for its value at 1/(2N) backward in time. The difference between \code{func()} evaluated with these two rate matrices is the change in \code{y}attributable to that particular covariate and that particular time step. Summing over all N time steps, we get the contribution to the difference of each covariate, \code{effectmat}. The sum of \code{effectmat} should come very close to \code{func(rates2)-func(rates1)}. The error decreases with larger \code{N}, but there is not much point in having an \code{N} higher than 100, and 20 is usually sufficient. This ought to be able to handle a very wide variety of functions. 
 #' 
 #' If \code{pars1} are observations from 2005 and \code{pars2} are observations from 2006 an \code{N} of 20 would imply a delta of 1/20 of a year for each integration step. Higher \code{N} provides finer results (a lower total residual), but takes longer to compute. In general, there are decreasing returns to higher \code{N}. \code{sum(effectmat)} ought to approximate \code{func(rates2)-func(rates1)}.
 #' 
@@ -100,67 +100,28 @@
 
 horiuchi <-
 		function(func, pars1, pars2, N, ...){
-	# number of interval jumps   
-	y1 			<- func(pars1,...)
-	y2 			<- func(pars2,...)
-	d 			<- pars2-pars1
-	n 			<- length(pars1)
-	delta 		<- d/N
-	x           <- pars1 + d * matrix(rep(.5:(N-.5)/N,n), byrow = TRUE, ncol = N)
+
+	d 			    <- pars2 - pars1
+	n 			    <- length(pars1)
+	delta 		  <- d / N
+	grad        <- matrix(rep(.5:(N - .5) / N, n),
+			              byrow = TRUE, ncol = N)
+	x           <- pars1 + d * grad
 	cc          <- matrix(0, nrow = n, ncol = N)
-	zeros       <- rep(0,n)
+	# TR: added 16-9-2024 so that names can be used to reconstruct
+	# data inside func()
+	rownames(x) <- names(pars1)
 	for (j in 1:N){
 		DD <- diag(delta / 2)
 		for (i in 1:n){
 			cc[i,j] <- func((x[, j] + DD[, i]), ...) - func((x[, j] - DD[, i]), ...)
 		}
 	}	
-	#cat("Error of decomposition (in %)\ne =",100*(sum(cc)/(y2-y1)-1),"\n")
-	return(rowSums(cc))
+
+	out <- rowSums(cc)
+	names(out) <- names(pars1)
+	out
 }
-
-#' @title Fake data generated for example.
-#' @description
-#' The first column \code{Lx} is a discrete survival function for time point 1. The second column \code{Fx} are age specific fertility rates.
-#' 
-#' @examples 
-#' \dontrun{
-#' data(rates1)
-#' data(rates2)
-#' # nothing fancy
-#' # compare Lx
-#' plot(rates1[,1],type='l',col="blue")
-#' lines(rates2[,1],col="green")
-#' # compare Fx
-#' plot(rates1[,2],type='l',col="blue")
-#' lines(rates2[,2],col="green") 
-#' }
-#' 
-#' @keywords datasets
-#' 
-#' @docType data
-"rates1"
-
-#' @title Fake data generated for example.
-#' @description
-#' The first column \code{Lx} is a discrete survival function for time point 2. The second column \code{Fx} are age specific fertility rates.
-#' 
-#' @examples 
-#' \dontrun{
-#' data(rates1)
-#' data(rates2)
-#' # nothing fancy
-#' # compare Lx
-#' plot(rates1[,1],type='l',col="blue")
-#' lines(rates2[,1],col="green")
-#' # compare Fx
-#' plot(rates1[,2],type='l',col="blue")
-#' lines(rates2[,2],col="green") 
-#' }
-#' 
-#' @keywords datasets
-#' @docType data 
-"rates2"
 
 #' @title R0vec Calculates net reproduction, R0, according to a given set of rates Lx,fx and a fixed
 #'  proportion female of births, \code{pfem}.

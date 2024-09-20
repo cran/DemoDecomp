@@ -1,10 +1,8 @@
-# Changes from version 1.0.0 
-*  placeholder
+# Changes with version 1.14.1 
+* DESCRIPTION updated to use Authors@R field properly
 
-# Changes from previous package `DecompHoriuchi` 
-7 Aug 2018. `DemoData` supersedes the `DecompHoriuchi` package, which was only available on github. 
+# Changes with version 1.14.0 
+*  vector names now passed to `func()` in all three decomposition methods, as well as appended to output.
 
-*  Only single-vector methods are included
-*  `DecompContinuousOrig()` is renamed `horiuchi()`
-*  arguments `rates1` and `rates2` are now `pars1` and `pars2`, respectively
-
+# Changes with version 1.12.0
+*  `ltre()` method added, including numerical derivative backup.

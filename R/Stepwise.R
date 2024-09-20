@@ -107,7 +107,7 @@ stepwise_replacement <- function(func, pars1, pars2, symmetrical = TRUE, directi
 		dec[, 1]              <- diff(apply(RM_1_2_up, 2, func, ...))
 	}
 	if (down){
-		dec[, 2]              <- diff(apply(RM_1_2_down, 2, func, ...))
+		dec[, 2]              <- rev(diff(apply(RM_1_2_down, 2, func, ...)))
 	}
 	
 	if (symmetrical){
@@ -115,12 +115,13 @@ stepwise_replacement <- function(func, pars1, pars2, symmetrical = TRUE, directi
 			dec[, 3]          <- -diff(apply(RM_2_1_up, 2, func, ...))
 		}
 		if (down){
-			dec[, 4]          <- -diff(apply(RM_2_1_down, 2, func, ...))
+			dec[, 4]          <- rev(-diff(apply(RM_2_1_down, 2, func, ...)))
 		}
 	}
 	
 	
-	dec_avg                   <- rowMeans(dec, na.rm = TRUE)
+	dec_avg               <- rowMeans(dec, na.rm = TRUE)
+	names(dec_avg)        <- names(pars1)
 	dec_avg
 }
 
@@ -191,34 +192,3 @@ Mxc2e0abrvec <- function(Mxcvec, dims, trans = FALSE){
 	}
 	Mxc2e0abr(Mxcvec)
 }
-
-#' Year 2002 death rates by cause for US males in abridged age classes
-#'
-#' A matrix containing death rates for six causes (one of which is other) for abrdged age classes 0-85. Ages are labelled in rows, and causes in column names.
-#'
-#' @format A matrix with 19 rows and 6 columns
-
-#' @source \url{https://www.demogr.mpg.de/en/projects_publications/publications_1904/mpidr_technical_reports/an_excel_spreadsheet_for_the_decomposition_of_a_difference_between_two_values_of_an_aggregate_4591.htm}
-"Mxc1"
-
-#' Year 2002 death rates by cause for England and Wales males in abridged age classes
-#'
-#' A matrix containing death rates for six causes (one of which is other) for abrdged age classes 0-85. Ages are labelled in rows, and causes in column names.
-#'
-#' @format A matrix with 19 rows and 6 columns
-
-#' @source \url{https://www.demogr.mpg.de/en/projects_publications/publications_1904/mpidr_technical_reports/an_excel_spreadsheet_for_the_decomposition_of_a_difference_between_two_values_of_an_aggregate_4591.htm}
-"Mxc2"
-
-#' Comparison decomposition results by age and cause
-#'
-#' A matrix containing the contributions to the difference in life expectancy at birth between 2002 US males and England and Wales males. Ages (in rows) are in abridged categories, 0-85, and there are six causes, including other, in columns. The sum of the matrix is the difference in life expectancy at birth between the two populations. Values are based on symmetrical stepwise replacement from young to old ages only. This is just to make sure implementation is close.
-#'
-#' @format A matrix with 19 rows and 6 columns
-
-#' @source \url{https://www.demogr.mpg.de/en/projects_publications/publications_1904/mpidr_technical_reports/an_excel_spreadsheet_for_the_decomposition_of_a_difference_between_two_values_of_an_aggregate_4591.htm}
-"Compare"
-
-
-
-
